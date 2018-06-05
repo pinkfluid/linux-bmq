@@ -36,16 +36,10 @@ __setup
 
 #pkgbase=linux               # Build stock -ARCH kernel
 #pkgbase=linux-custom       # Build kernel with a different name
-<<<<<<< HEAD
 pkgbase=linux-pds${PKG_FLAVOR}
-_srcname=linux-4.16
-pkgver=4.16.13
-pkgrel=2
-=======
 _srcname=linux-4.17
 pkgver=4.17
 pkgrel=1
->>>>>>> asp/packages/packages/linux
 arch=('x86_64')
 url="https://www.kernel.org/"
 license=('GPL2')
@@ -77,7 +71,7 @@ sha256sums=('9faa1dd896eaea961dc6e886697c0b3301277102e5bc976b2758f9a62d3ccd13'
 ##
 # PDS scheduler
 ##
-_pdsver="098p"
+_pdsver="098q"
 pkgver+=.pds${_pdsver}
 
 # Extract the linux version from _srcname
@@ -86,7 +80,7 @@ _linuxver=${_srcname#linux-}
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
 source+=("https://bitbucket.org/alfredchen/linux-gc/downloads/${_pdspatch}")
-sha256sums+=("5e421e0c3fc60706640c202612c9d6b2de0f04499c90798e5e3b153fc356e6ef")
+sha256sums+=("03c458dacd99dab4d8ea8fbbe449fd280184a25fc3cb200103eb40deb4b9e55a")
 
 _kernelname=${pkgbase#linux}
 : ${_kernelname:=-ARCH}
