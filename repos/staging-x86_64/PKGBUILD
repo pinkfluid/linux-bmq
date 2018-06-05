@@ -2,50 +2,11 @@
 # Maintainer: Tobias Powalowski <tpowa@archlinux.org>
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
-# NUMA is optimized for multi-socket motherboards. A single multi-core CPU can
-# actually run slower with NUMA enabled. Most users will want to set this option
-# to enabled ... in other words, do not use NUMA on a single CPU system.
-#
-# See, https://bugs.archlinux.org/task/31187
-_NUMAdisable=y
-
-__setup()
-{
-  [ -z "$FLAVOR" ] && {
-    FLAVOR=$(gcc -march=native -Q --help=target | grep march | tr -s ' \t' ':' | cut -d : -f 3)
-    msg "Detected CPU: $FLAVOR"
-  }
-
-  case "$FLAVOR" in
-    atom|bulldozer|piledriver|steamroller|excavator|zen|psc|atom|core2|nehalem|westmere|silvermont|sandybridge|ivybridge|haswell|broadwell|skylake)
-      KCONFIG_FLAVOR="CONFIG_M$(echo $FLAVOR | tr a-z A-Z)"
-      PKG_FLAVOR="-${FLAVOR}"
-      ;;
-
-    generic)
-      KCONFIG_FLAVOR="CONFIG_GENERIC_CPU"
-      PKG_FLAVOR=""
-      ;;
-    *)
-      msg "Unknown flavor: $FLAVOR"
-      exit 1
-  esac
-}
-
-__setup
-
-#pkgbase=linux               # Build stock -ARCH kernel
+pkgbase=linux               # Build stock -ARCH kernel
 #pkgbase=linux-custom       # Build kernel with a different name
-<<<<<<< HEAD
-pkgbase=linux-pds${PKG_FLAVOR}
-_srcname=linux-4.16
-pkgver=4.16.13
-pkgrel=2
-=======
 _srcname=linux-4.17
 pkgver=4.17
 pkgrel=1
->>>>>>> asp/packages/packages/linux
 arch=('x86_64')
 url="https://www.kernel.org/"
 license=('GPL2')
@@ -74,20 +35,6 @@ sha256sums=('9faa1dd896eaea961dc6e886697c0b3301277102e5bc976b2758f9a62d3ccd13'
             '0b77e6bef12735bc91e3f0e8232512e973688466f2e8a2c3a93502cb2d4b4eed'
             '92615acad59cbef9fd43b2710f5a77ffea45a86543ccff1b12eb676a9c8058cc')
 
-##
-# PDS scheduler
-##
-_pdsver="098p"
-pkgver+=.pds${_pdsver}
-
-# Extract the linux version from _srcname
-_linuxver=${_srcname#linux-}
-
-_pdspatch="v${_linuxver}_pds${_pdsver}.patch"
-
-source+=("https://bitbucket.org/alfredchen/linux-gc/downloads/${_pdspatch}")
-sha256sums+=("5e421e0c3fc60706640c202612c9d6b2de0f04499c90798e5e3b153fc356e6ef")
-
 _kernelname=${pkgbase#linux}
 : ${_kernelname:=-ARCH}
 
@@ -96,10 +43,6 @@ prepare() {
 
   # add upstream patch
   #patch -p1 -i ../patch-${pkgver}
-  #patch -p1 -i ../patch-${pkgver%.pds*}
-
-  # Patch source with PDS patchset
-  patch -Np1 -i  "${srcdir}/${_pdspatch}"
 
   # add latest fixes from stable queue, if needed
   # http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git
@@ -111,7 +54,7 @@ prepare() {
   patch -Np1 -i ../0002-Revert-drm-i915-edp-Allow-alternate-fixed-mode-for-e.patch
 
   cat ../config - >.config <<END
-CONFIG_LOCALVERSION="-pds${_pdsver}${PKG_FLAVOR}"
+CONFIG_LOCALVERSION="${_kernelname}"
 CONFIG_LOCALVERSION_AUTO=n
 END
 
@@ -119,61 +62,6 @@ END
   sed -e "/^EXTRAVERSION =/s/=.*/= -${pkgrel}/" \
       -e "/^EXTRAVERSION =/aLOCALVERSION =" \
       -i Makefile
-
-  msg "Setting PDS as default scheduler..."
-  echo "CONFIG_SCHED_PDS=y" >> ./.config
-  echo "CONFIG_SMT_NICE=y" >> ./.config
-
-  # Set the CPU type
-  [ -n "$KCONFIG_FLAVOR" ] && {
-    msg "Enabling kernel CPU optimization: $KCONFIG_FLAVOR"
-    # If anybody knows a better way of getting rid of the CPU prompt please let me know
-    cat >> ./.config <<EOF
-# CONFIG_MK8 is not set
-# CONFIG_MK8SSE3 is not set
-# CONFIG_MK10 is not set
-# CONFIG_MBARCELONA is not set
-# CONFIG_MBOBCAT is not set
-# CONFIG_MJAGUAR is not set
-# CONFIG_MBULLDOZER is not set
-# CONFIG_MPILEDRIVER is not set
-# CONFIG_MSTEAMROLLER is not set
-# CONFIG_MEXCAVATOR is not set
-# CONFIG_MZEN is not set
-# CONFIG_MPSC is not set
-# CONFIG_MATOM is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_MNEHALEM is not set
-# CONFIG_MWESTMERE is not set
-# CONFIG_MSILVERMONT is not set
-# CONFIG_MSANDYBRIDGE is not set
-# CONFIG_MIVYBRIDGE is not set
-# CONFIG_MHASWELL is not set
-# CONFIG_MBROADWELL is not set
-# CONFIG_MSKYLAKE is not set
-# CONFIG_MSKYLAKEX is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_MNATIVE is not set
-EOF
-    echo "${KCONFIG_FLAVOR}=y" >> ./.config
-    echo "# CONFIG_GENERIC_CPU is not set" >> ./.config
-  }
-
-  ### Optionally disable NUMA for 64-bit kernels only
-  # (x86 kernels do not support NUMA)
-  if [ -n "$_NUMAdisable" ]; then
-    msg "Disabling NUMA from kernel config..."
-    sed -i -e 's/CONFIG_NUMA=y/# CONFIG_NUMA is not set/' \
-      -i -e '/CONFIG_AMD_NUMA=y/d' \
-      -i -e '/CONFIG_X86_64_ACPI_NUMA=y/d' \
-      -i -e '/CONFIG_NODES_SPAN_OTHER_NODES=y/d' \
-      -i -e '/# CONFIG_NUMA_EMU is not set/d' \
-      -i -e '/CONFIG_NODES_SHIFT=6/d' \
-      -i -e '/CONFIG_NEED_MULTIPLE_NODES=y/d' \
-      -i -e '/# CONFIG_MOVABLE_NODE is not set/d' \
-      -i -e '/CONFIG_USE_PERCPU_NUMA_NODE_ID=y/d' \
-      -i -e '/CONFIG_ACPI_NUMA=y/d' ./.config
-  fi
 
   # don't run depmod on 'make install'. We'll do this ourselves in packaging
   sed -i '2iexit 0' scripts/depmod.sh
@@ -204,7 +92,6 @@ _package() {
   [ "${pkgbase}" = "linux" ] && groups=('base')
   depends=('coreutils' 'linux-firmware' 'kmod' 'mkinitcpio>=0.7')
   optdepends=('crda: to set the correct wireless channels of your country')
-  provides=("${pkgbase}=${pkgver}")
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
   install=linux.install
 
@@ -260,8 +147,6 @@ _package() {
 
 _package-headers() {
   pkgdesc="Header files and scripts for building modules for ${pkgbase/linux/Linux} kernel"
-  depends=("${pkgbase}") # added to keep kernel and headers packages matched
-  provides=("${pkgbase}-headers=${pkgver}" "linux-headers=${pkgver}")
 
   cd ${_srcname}
   local _builddir="${pkgdir}/usr/lib/modules/${_kernver}/build"
@@ -340,7 +225,7 @@ _package-docs() {
   chmod -R u=rwX,go=rX "${_builddir}"
 }
 
-pkgname=("${pkgbase}" "${pkgbase}-headers")
+pkgname=("${pkgbase}" "${pkgbase}-headers" "${pkgbase}-docs")
 for _p in ${pkgname[@]}; do
   eval "package_${_p}() {
     $(declare -f "_package${_p#${pkgbase}}")
