@@ -71,16 +71,17 @@ sha256sums=('9faa1dd896eaea961dc6e886697c0b3301277102e5bc976b2758f9a62d3ccd13'
 ##
 # PDS scheduler
 ##
-_pdsver="098q"
-pkgver+=.pds${_pdsver}
+_pdsver="098r"
 
 # Extract the linux version from _srcname
 _linuxver=${_srcname#linux-}
 
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
-source+=("https://bitbucket.org/alfredchen/linux-gc/downloads/${_pdspatch}")
-sha256sums+=("03c458dacd99dab4d8ea8fbbe449fd280184a25fc3cb200103eb40deb4b9e55a")
+source+=("https://raw.githubusercontent.com/cchalpha/PDS-mq/master/${pkgver}/${_pdspatch}")
+sha256sums+=("4f95570ecf6da52f150b9721684cd172b3b551b17ecc70020e07f0db16b6f0cd")
+
+pkgver+=.pds${_pdsver}
 
 _kernelname=${pkgbase#linux}
 : ${_kernelname:=-ARCH}
