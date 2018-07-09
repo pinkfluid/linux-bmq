@@ -75,7 +75,7 @@ sha256sums=('9faa1dd896eaea961dc6e886697c0b3301277102e5bc976b2758f9a62d3ccd13'
 ##
 # PDS scheduler
 ##
-_pdsver="098r"
+_pdsver="098s"
 
 # Extract the linux version from _srcname
 _linuxver=${_srcname#linux-}
@@ -83,7 +83,7 @@ _linuxver=${_srcname#linux-}
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
 source+=("https://raw.githubusercontent.com/cchalpha/PDS-mq/master/${_srcname#linux-}/${_pdspatch}")
-sha256sums+=("4f95570ecf6da52f150b9721684cd172b3b551b17ecc70020e07f0db16b6f0cd")
+sha256sums+=("0c7e6e4f8a2dbff5ea340ac63f8a274213f04436214aba72d7c0bd07cbdf2f90")
 
 pkgver+=.pds${_pdsver}
 
