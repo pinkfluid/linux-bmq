@@ -35,7 +35,7 @@ __setup()
 
 __setup
 
-#pkgbase=linux               # Build stock -arch kernel
+pkgbase=linux               # Build stock -arch kernel
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=4.17.11-arch1
 pkgver=${_srcver//-/.}
@@ -70,7 +70,7 @@ sha256sums=('SKIP'
 _pdsver="098t"
 
 # Extract the linux version from _srcname
-_linuxver=${pkgver%.*}
+_linuxver=${pkgver%.*.*}
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
 source+=("https://raw.githubusercontent.com/cchalpha/PDS-mq/master/${_linuxver}/${_pdspatch}")
