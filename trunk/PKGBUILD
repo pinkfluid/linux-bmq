@@ -74,7 +74,7 @@ _kernelname=${pkgbase#linux}
 _pdsver="098u"
 
 # Extract the linux version from _srcname
-_linuxver=${pkgver%.*}
+_linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
 source+=("https://gitlab.com/alfredchen/PDS-mq/raw/master/${_linuxver}/${_pdspatch}")
