@@ -71,14 +71,14 @@ _kernelname=${pkgbase#linux}
 ##
 # PDS scheduler
 ##
-_pdsver="098u"
+_pdsver="098v"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _pdspatch="v${_linuxver}_pds${_pdsver}.patch"
 
 source+=("https://gitlab.com/alfredchen/PDS-mq/raw/master/${_linuxver}/${_pdspatch}")
-sha256sums+=("24c9986367523bcc8418ec7bcb049284d1e6c057fa21a5e7d6fc55c6e629f888")
+sha256sums+=("0ccd815d5ee39ef420bd8c39dfe78985180747c7cb8e0b0392219120b46b1fd7")
 
 pkgver+=.pds${_pdsver}
 
