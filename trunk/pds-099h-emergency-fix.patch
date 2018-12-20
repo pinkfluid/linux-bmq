@@ -1,0 +1,15 @@
+diff --git a/include/linux/sched/prio.h b/include/linux/sched/prio.h
+index 162c2e649d0f55b626146b2594ad736c90056ab4..fba04bb91492e30bd620c3710e61258b54cdf46b 100644
+--- a/include/linux/sched/prio.h
++++ b/include/linux/sched/prio.h
+@@ -26,8 +26,8 @@
+ 
+ #define MAX_RT_PRIO		((MAX_USER_RT_PRIO) + 1)
+ 
+-#define NORMAL_PRIO		(MAX_USER_RT_PRIO)
+-#define IDLE_PRIO		((MAX_USER_RT_PRIO) + 1)
++#define NORMAL_PRIO		(MAX_RT_PRIO)
++#define IDLE_PRIO		((MAX_RT_PRIO) + 1)
+ #define PRIO_LIMIT		((IDLE_PRIO) + 1)
+ #else /* !CONFIG_SCHED_PDS */
+ #define MAX_RT_PRIO		MAX_USER_RT_PRIO
