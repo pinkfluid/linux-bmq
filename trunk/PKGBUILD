@@ -34,7 +34,7 @@ __setup()
 
 __setup
 
-pkgbase="linux-pds${PKG_FLAVOR}"
+pkgbase="linux-bmq${PKG_FLAVOR}"
 #pkgbase=linux               # Build stock -ARCH kernel
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.0.1-arch1
@@ -68,18 +68,17 @@ _kernelname=${pkgbase#linux}
 : ${_kernelname:=-ARCH}
 
 ##
-# PDS scheduler
+# BMQ scheduler
 ##
-_pdsver="099l"
+_bmqver="089"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
-_pdspatch="v${_linuxver}_pds${_pdsver}.patch"
-
-source+=("https://gitlab.com/alfredchen/PDS-mq/raw/master/${_linuxver}/${_pdspatch}")
+_bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
+source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
 sha256sums+=("ebed7ad91b3bcc5f9807b97addaef7dbbcf40cca1ab8d325257af47096505a6f")
 
-pkgver+=.pds${_pdsver}
+pkgver+=.bmq${_bmqver}
 
 prepare() {
   cd $_srcname
@@ -102,11 +101,11 @@ prepare() {
   cp ../config .config
 
   cat ../config - >.config <<END
-CONFIG_LOCALVERSION="-pds${_pdsver}${PKG_FLAVOR}"
+CONFIG_LOCALVERSION="-bmq${_bmqver}${PKG_FLAVOR}"
 CONFIG_LOCALVERSION_AUTO=n
 END
-  msg "Setting PDS as default scheduler..."
-  echo "CONFIG_SCHED_PDS=y" >> ./.config
+  msg "Setting BMQ as default scheduler..."
+  echo "CONFIG_SCHED_BMQ=y" >> ./.config
   echo "CONFIG_SMT_NICE=y" >> ./.config
 
   # Set the CPU type
