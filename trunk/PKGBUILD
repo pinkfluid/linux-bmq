@@ -76,7 +76,10 @@ _bmqver="089"
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("ebed7ad91b3bcc5f9807b97addaef7dbbcf40cca1ab8d325257af47096505a6f")
+sha256sums+=("42adcaf8f7389631707244a2cc5d64e7eeaf7915af83fb05c96fc59428b19798")
+
+source+=("cpuacct_fix.patch")
+sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
 
 pkgver+=.bmq${_bmqver}
 
