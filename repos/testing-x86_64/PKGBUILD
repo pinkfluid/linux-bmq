@@ -2,40 +2,7 @@
 # Maintainer: Tobias Powalowski <tpowa@archlinux.org>
 # Maintainer: Thomas Baechler <thomas@archlinux.org>
 
-# NUMA is optimized for multi-socket motherboards. A single multi-core CPU can
-# actually run slower with NUMA enabled. Most users will want to set this option
-# to enabled ... in other words, do not use NUMA on a single CPU system.
-#
-# See, https://bugs.archlinux.org/task/31187
-_NUMAdisable=y
-
-__setup()
-{
-  [ -z "$FLAVOR" ] && {
-    FLAVOR=$(gcc -march=native -Q --help=target | grep march | tr -s ' \t' ':' | cut -d : -f 3)
-    msg "Detected CPU: $FLAVOR"
-  }
-
-  case "$FLAVOR" in
-    atom|bulldozer|piledriver|steamroller|excavator|zen|psc|atom|core2|nehalem|westmere|silvermont|sandybridge|ivybridge|haswell|broadwell|skylake)
-      KCONFIG_FLAVOR="CONFIG_M$(echo $FLAVOR | tr a-z A-Z)"
-      PKG_FLAVOR="-${FLAVOR}"
-      ;;
-
-    generic)
-      KCONFIG_FLAVOR="CONFIG_GENERIC_CPU"
-      PKG_FLAVOR=""
-      ;;
-    *)
-      msg "Unknown flavor: $FLAVOR"
-      exit 1
-  esac
-}
-
-__setup
-
-pkgbase="linux-bmq${PKG_FLAVOR}"
-#pkgbase=linux               # Build stock -ARCH kernel
+pkgbase=linux               # Build stock -ARCH kernel
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.0.5-arch1
 pkgver=${_srcver//-/.}
@@ -67,22 +34,6 @@ sha256sums=('SKIP'
 _kernelname=${pkgbase#linux}
 : ${_kernelname:=-ARCH}
 
-##
-# BMQ scheduler
-##
-_bmqver="091"
-
-# Extract the linux version from _srcname
-_linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
-_bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
-source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("2d9d643e24355e1b36cbf49728da99b317e938f898c57412fc1da2ce261d726f")
-
-source+=("cpuacct_fix.patch")
-sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
-
-pkgver+=.bmq${_bmqver}
-
 prepare() {
   cd $_srcname
 
@@ -102,66 +53,6 @@ prepare() {
 
   msg2 "Setting config..."
   cp ../config .config
-
-  cat ../config - >.config <<END
-CONFIG_LOCALVERSION="-bmq${_bmqver}${PKG_FLAVOR}"
-CONFIG_LOCALVERSION_AUTO=n
-END
-  msg "Setting BMQ as default scheduler..."
-  echo "CONFIG_SCHED_BMQ=y" >> ./.config
-  echo "CONFIG_SMT_NICE=y" >> ./.config
-
-  # Set the CPU type
-  [ -n "$KCONFIG_FLAVOR" ] && {
-    msg "Enabling kernel CPU optimization: $KCONFIG_FLAVOR"
-    # If anybody knows a better way of getting rid of the CPU prompt please let me know
-    cat >> ./.config <<EOF
-# CONFIG_MK8 is not set
-# CONFIG_MK8SSE3 is not set
-# CONFIG_MK10 is not set
-# CONFIG_MBARCELONA is not set
-# CONFIG_MBOBCAT is not set
-# CONFIG_MJAGUAR is not set
-# CONFIG_MBULLDOZER is not set
-# CONFIG_MPILEDRIVER is not set
-# CONFIG_MSTEAMROLLER is not set
-# CONFIG_MEXCAVATOR is not set
-# CONFIG_MZEN is not set
-# CONFIG_MPSC is not set
-# CONFIG_MATOM is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_MNEHALEM is not set
-# CONFIG_MWESTMERE is not set
-# CONFIG_MSILVERMONT is not set
-# CONFIG_MSANDYBRIDGE is not set
-# CONFIG_MIVYBRIDGE is not set
-# CONFIG_MHASWELL is not set
-# CONFIG_MBROADWELL is not set
-# CONFIG_MSKYLAKE is not set
-# CONFIG_MSKYLAKEX is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_MNATIVE is not set
-EOF
-    echo "${KCONFIG_FLAVOR}=y" >> ./.config
-    echo "# CONFIG_GENERIC_CPU is not set" >> ./.config
-  }
-
-  ### Optionally disable NUMA for 64-bit kernels only
-  # (x86 kernels do not support NUMA)
-  if [ -n "$_NUMAdisable" ]; then
-    msg "Disabling NUMA from kernel config..."
-    sed -i -e 's/CONFIG_NUMA=y/# CONFIG_NUMA is not set/' \
-      -i -e '/CONFIG_AMD_NUMA=y/d' \
-      -i -e '/CONFIG_X86_64_ACPI_NUMA=y/d' \
-      -i -e '/CONFIG_NODES_SPAN_OTHER_NODES=y/d' \
-      -i -e '/# CONFIG_NUMA_EMU is not set/d' \
-      -i -e '/CONFIG_NODES_SHIFT=6/d' \
-      -i -e '/CONFIG_NEED_MULTIPLE_NODES=y/d' \
-      -i -e '/# CONFIG_MOVABLE_NODE is not set/d' \
-      -i -e '/CONFIG_USE_PERCPU_NUMA_NODE_ID=y/d' \
-      -i -e '/CONFIG_ACPI_NUMA=y/d' ./.config
-  fi
-
   make olddefconfig
 
   make -s kernelrelease > ../version
@@ -178,7 +69,6 @@ _package() {
   [[ $pkgbase = linux ]] && groups=(base)
   depends=(coreutils linux-firmware kmod mkinitcpio)
   optdepends=('crda: to set the correct wireless channels of your country')
-  provides=("${pkgbase}=${pkgver}")
   backup=("etc/mkinitcpio.d/$pkgbase.preset")
   install=linux.install
 
@@ -232,8 +122,6 @@ _package() {
 
 _package-headers() {
   pkgdesc="Header files and scripts for building modules for ${pkgbase/linux/Linux} kernel"
-  depends=("${pkgbase}") # added to keep kernel and headers packages matched
-  provides=("${pkgbase}-headers=${pkgver}" "linux-headers=${pkgver}")
 
   local builddir="$pkgdir/usr/lib/modules/$(<version)/build"
 
@@ -344,8 +232,7 @@ _package-docs() {
   chmod -Rc u=rwX,go=rX "$pkgdir"
 }
 
-#pkgname=("$pkgbase" "$pkgbase-headers" "$pkgbase-docs")
-pkgname=("$pkgbase" "$pkgbase-headers")
+pkgname=("$pkgbase" "$pkgbase-headers" "$pkgbase-docs")
 for _p in "${pkgname[@]}"; do
   eval "package_$_p() {
     $(declare -f "_package${_p#$pkgbase}")
