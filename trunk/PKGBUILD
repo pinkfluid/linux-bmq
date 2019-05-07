@@ -39,7 +39,7 @@ pkgbase="linux-bmq${PKG_FLAVOR}"
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.1-arch1
 pkgver=${_srcver//-/.}
-pkgrel=2
+pkgrel=1
 arch=(x86_64)
 url="https://git.archlinux.org/linux.git/log/?h=v$_srcver"
 license=(GPL2)
@@ -70,13 +70,13 @@ _kernelname=${pkgbase#linux}
 ##
 # BMQ scheduler
 ##
-_bmqver="093"
+_bmqver="094"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("8e155350eefe9975149d8c9fe15d13432c0e173597928b5b1ed6e5602c115476")
+sha256sums+=("885ed0c36054afd28055ff8cad6c6da47f40f5e5e7774f609e209e0e384b5198")
 
 source+=("cpuacct_fix.patch")
 sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
