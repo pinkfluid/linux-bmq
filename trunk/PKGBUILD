@@ -39,7 +39,7 @@ pkgbase="linux-bmq${PKG_FLAVOR}"
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.1.1-arch1
 pkgver=${_srcver//-/.}
-pkgrel=2
+pkgrel=1
 arch=(x86_64)
 url="https://git.archlinux.org/linux.git/log/?h=v$_srcver"
 license=(GPL2)
