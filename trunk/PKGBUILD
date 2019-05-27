@@ -39,7 +39,7 @@ pkgbase="linux-bmq${PKG_FLAVOR}"
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.1.5-arch1
 pkgver=${_srcver//-/.}
-pkgrel=2
+pkgrel=1
 arch=(x86_64)
 url="https://git.archlinux.org/linux.git/log/?h=v$_srcver"
 license=(GPL2)
@@ -70,19 +70,16 @@ _kernelname=${pkgbase#linux}
 ##
 # BMQ scheduler
 ##
-_bmqver="094"
+_bmqver="095"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("885ed0c36054afd28055ff8cad6c6da47f40f5e5e7774f609e209e0e384b5198")
+sha256sums+=("0d66538886e3888b1bd0e7b6b4281d240b74b929cbe7242400b4c056adcde6bb")
 
 source+=("cpuacct_fix.patch")
 sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
-
-source+=("bmq_094_emergency_fix.patch::https://gitlab.com/alfredchen/linux-bmq/commit/c98f44724fac5c2b42d831f0ad986008420d13c2.diff")
-sha256sums+=("09f7a9d84c39e62e1b0995e405c69360fc22625ec9ba7bd6ce4a49842b17fabf")
 
 pkgver+=.bmq${_bmqver}
 
