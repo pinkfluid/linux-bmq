@@ -70,13 +70,13 @@ _kernelname=${pkgbase#linux}
 ##
 # BMQ scheduler
 ##
-_bmqver="095"
+_bmqver="096"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("0d66538886e3888b1bd0e7b6b4281d240b74b929cbe7242400b4c056adcde6bb")
+sha256sums+=("48be5e7f27d4a0570bd31f37ed1ad35241ff7f427dae5513cab875c7b44aeb08")
 
 source+=("cpuacct_fix.patch")
 sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
