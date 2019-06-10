@@ -78,6 +78,9 @@ _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
 sha256sums+=("48be5e7f27d4a0570bd31f37ed1ad35241ff7f427dae5513cab875c7b44aeb08")
 
+source+=("bmq096_ffs_fix.patch::https://gitlab.com/alfredchen/linux-bmq/commit/3606d92b4e7dd913f485fb3b5ed6c641dcdeb838.diff")
+sha256sums+=("09edf4c1ece7def4c7dff17eec2aefd460486e24e458263783b920e77943e777")
+
 source+=("cpuacct_fix.patch")
 sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
 
