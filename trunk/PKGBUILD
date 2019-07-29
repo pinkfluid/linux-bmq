@@ -12,7 +12,7 @@ _NUMAdisable=y
 __setup()
 {
   [ -z "$FLAVOR" ] && {
-    FLAVOR=$(gcc -march=native -Q --help=target | grep march | tr -s ' \t' ':' | cut -d : -f 3)
+    FLAVOR=$(gcc -march=native -Q --help=target | grep -e '^\s\+-march=' | tr -s ' \t' ':' | cut -d : -f 3)
     msg "Detected CPU: $FLAVOR"
   }
 
@@ -27,7 +27,7 @@ __setup()
       PKG_FLAVOR=""
       ;;
     *)
-      msg "Unknown flavor: $FLAVOR"
+      msg "Unknown flavor: '$FLAVOR'"
       exit 1
   esac
 }
@@ -73,16 +73,13 @@ _kernelname=${pkgbase#linux}
 ##
 # BMQ scheduler
 ##
-_bmqver="096"
+_bmqver="098"
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="v${_linuxver}_bmq${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("48be5e7f27d4a0570bd31f37ed1ad35241ff7f427dae5513cab875c7b44aeb08")
-
-source+=("bmq096_ffs_fix.patch::https://gitlab.com/alfredchen/linux-bmq/commit/3606d92b4e7dd913f485fb3b5ed6c641dcdeb838.diff")
-sha256sums+=("09edf4c1ece7def4c7dff17eec2aefd460486e24e458263783b920e77943e777")
+sha256sums+=("628efd7ea8d6eb7a015e8790411e2353aa9cd6548099aa5c229a3b1cd25f1794")
 
 source+=("cpuacct_fix.patch")
 sha256sums+=("c946111359a536dfc098d7700d62bce61718a16dedad6ab04ce6286e8a894ca5")
