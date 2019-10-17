@@ -103,7 +103,7 @@ prepare() {
   cp ../config .config
 
   cat ../config - >.config <<END
-CONFIG_LOCALVERSION="-bmq${_bmqver}${PKG_FLAVOR}"
+CONFIG_LOCALVERSION="-bmq${_bmqver}"
 CONFIG_LOCALVERSION_AUTO=n
 END
   msg "Setting BMQ as default scheduler..."
