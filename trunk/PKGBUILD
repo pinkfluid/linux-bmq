@@ -11,30 +11,28 @@ _NUMAdisable=y
 
 __setup()
 {
-  [ -z "$FLAVOR" ] && {
-    FLAVOR=$(gcc -march=native -Q --help=target | grep -e '^\s\+-march=' | tr -s ' \t' ':' | cut -d : -f 3)
-    msg "Detected CPU: $FLAVOR"
+  [ -z "$PKG_FLAVOR" ] && {
+    PKG_FLAVOR=$(gcc -march=native -Q --help=target | grep -e '^\s\+-march=' | tr -s ' \t' ':' | cut -d : -f 3)
+    msg "Detected CPU: $PKG_FLAVOR"
   }
 
-  case "$FLAVOR" in
+  case "$PKG_FLAVOR" in
     atom|bulldozer|piledriver|steamroller|excavator|zen|psc|atom|core2|nehalem|westmere|silvermont|sandybridge|ivybridge|haswell|broadwell|skylake)
-      KCONFIG_FLAVOR="CONFIG_M$(echo $FLAVOR | tr a-z A-Z)"
-      PKG_FLAVOR="${FLAVOR}"
+      KCONFIG_FLAVOR="CONFIG_M$(echo $PKG_FLAVOR | tr a-z A-Z)"
       ;;
 
     generic)
       KCONFIG_FLAVOR="CONFIG_GENERIC_CPU"
-      PKG_FLAVOR="generic"
       ;;
     *)
-      msg "Unknown flavor: '$FLAVOR'"
+      msg "Unknown flavor: '$PKG_FLAVOR'"
       exit 1
   esac
 }
 
 __setup
 
-pkgbase="linux-${PKG_FLAVOR}"
+pkgbase="linux-bmq-${PKG_FLAVOR}"
 #pkgbase=linux               # Build stock -ARCH kernel
 #pkgbase=linux-custom       # Build kernel with a different name
 _srcver=5.3.7-arch1
@@ -67,13 +65,14 @@ sha256sums=('SKIP'
             'c043f3033bb781e2688794a59f6d1f7ed49ef9b13eb77ff9a425df33a244a636'
             'ad6344badc91ad0630caacde83f7f9b97276f80d26a20619a87952be65492c65')
 
-_kernelname=${pkgbase#linux}
-: ${_kernelname:=-ARCH}
-
 ##
 # BMQ scheduler
 ##
 _bmqver="5.3-r2"
+
+#_kernelname=${pkgbase#linux}
+_kernelname="-${PKG_FLAVOR}"
+: ${_kernelname:=-ARCH}
 
 # Extract the linux version from _srcname
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
