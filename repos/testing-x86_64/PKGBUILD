@@ -1,37 +1,6 @@
 # Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
 
-# NUMA is optimized for multi-socket motherboards. A single multi-core CPU can
-# actually run slower with NUMA enabled. Most users will want to set this option
-# to enabled ... in other words, do not use NUMA on a single CPU system.
-#
-# See, https://bugs.archlinux.org/task/31187
-_NUMAdisable=y
-
-__setup()
-{
-  [ -z "$PKG_FLAVOR" ] && {
-    PKG_FLAVOR=$(gcc -march=native -Q --help=target | grep -e '^\s\+-march=' | tr -s ' \t' ':' | cut -d : -f 3)
-    msg "Detected CPU: $PKG_FLAVOR"
-  }
-
-  case "$PKG_FLAVOR" in
-    atom|bulldozer|piledriver|steamroller|excavator|zen|psc|atom|core2|nehalem|westmere|silvermont|sandybridge|ivybridge|haswell|broadwell|skylake)
-      KCONFIG_FLAVOR="CONFIG_M$(echo $PKG_FLAVOR | tr a-z A-Z)"
-      ;;
-
-    generic)
-      KCONFIG_FLAVOR="CONFIG_GENERIC_CPU"
-      ;;
-    *)
-      msg "Unknown flavor: '$PKG_FLAVOR'"
-      exit 1
-  esac
-}
-
-__setup
-
-#pkgbase=linux               # Build stock -ARCH kernel
-pkgbase="linux-bmq-${PKG_FLAVOR}"
+pkgbase=linux
 pkgver=5.4.arch1
 pkgrel=1
 pkgdesc='Linux'
@@ -52,23 +21,11 @@ validpgpkeys=(
   '8218F88849AAC522E94CF470A5E9288C4FA415FA'  # Jan Alexander Steffens (heftig)
 )
 sha256sums=('SKIP'
-            'bbf6f0f69de9b1aefc2374da6b289a132b945e87a94ec85728097c677ebbac3f')
-
-##
-# BMQ scheduler
-##
-_bmqver="5.3-r2"
+            'edf3e3de13ff0ee40da422ba168c03a3f351229aabb01829853da3b08720ea78')
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
-
-# Extract the linux version from _srcname
-_linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
-_bmqpatch="bmq_v${_bmqver}.patch"
-source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("131ce6048e26771f5b017ceb4cc7106cd646c28ae8ce6d46c0fca92bed5f82ae")
-pkgver+=.bmq${_bmqver//-}
 
 prepare() {
   cd $_srcname
@@ -89,66 +46,6 @@ prepare() {
 
   msg2 "Setting config..."
   cp ../config .config
-
-  cat ../config - >.config <<END
-CONFIG_LOCALVERSION="-bmq${_bmqver}"
-CONFIG_LOCALVERSION_AUTO=n
-END
-  msg "Setting BMQ as default scheduler..."
-  echo "CONFIG_SCHED_BMQ=y" >> ./.config
-  echo "CONFIG_SMT_NICE=y" >> ./.config
-
-  # Set the CPU type
-  [ -n "$KCONFIG_FLAVOR" ] && {
-    msg "Enabling kernel CPU optimization: $KCONFIG_FLAVOR"
-    # If anybody knows a better way of getting rid of the CPU prompt please let me know
-    cat >> ./.config <<EOF
-# CONFIG_MK8 is not set
-# CONFIG_MK8SSE3 is not set
-# CONFIG_MK10 is not set
-# CONFIG_MBARCELONA is not set
-# CONFIG_MBOBCAT is not set
-# CONFIG_MJAGUAR is not set
-# CONFIG_MBULLDOZER is not set
-# CONFIG_MPILEDRIVER is not set
-# CONFIG_MSTEAMROLLER is not set
-# CONFIG_MEXCAVATOR is not set
-# CONFIG_MZEN is not set
-# CONFIG_MPSC is not set
-# CONFIG_MATOM is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_MNEHALEM is not set
-# CONFIG_MWESTMERE is not set
-# CONFIG_MSILVERMONT is not set
-# CONFIG_MSANDYBRIDGE is not set
-# CONFIG_MIVYBRIDGE is not set
-# CONFIG_MHASWELL is not set
-# CONFIG_MBROADWELL is not set
-# CONFIG_MSKYLAKE is not set
-# CONFIG_MSKYLAKEX is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_MNATIVE is not set
-EOF
-    echo "${KCONFIG_FLAVOR}=y" >> ./.config
-    echo "# CONFIG_GENERIC_CPU is not set" >> ./.config
-  }
-
-  ### Optionally disable NUMA for 64-bit kernels only
-  # (x86 kernels do not support NUMA)
-  if [ -n "$_NUMAdisable" ]; then
-    msg "Disabling NUMA from kernel config..."
-    sed -i -e 's/CONFIG_NUMA=y/# CONFIG_NUMA is not set/' \
-      -i -e '/CONFIG_AMD_NUMA=y/d' \
-      -i -e '/CONFIG_X86_64_ACPI_NUMA=y/d' \
-      -i -e '/CONFIG_NODES_SPAN_OTHER_NODES=y/d' \
-      -i -e '/# CONFIG_NUMA_EMU is not set/d' \
-      -i -e '/CONFIG_NODES_SHIFT=6/d' \
-      -i -e '/CONFIG_NEED_MULTIPLE_NODES=y/d' \
-      -i -e '/# CONFIG_MOVABLE_NODE is not set/d' \
-      -i -e '/CONFIG_USE_PERCPU_NUMA_NODE_ID=y/d' \
-      -i -e '/CONFIG_ACPI_NUMA=y/d' ./.config
-  fi
-
   make olddefconfig
 
   make -s kernelrelease > version
