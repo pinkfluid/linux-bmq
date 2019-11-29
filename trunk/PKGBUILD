@@ -57,7 +57,7 @@ sha256sums=('SKIP'
 ##
 # BMQ scheduler
 ##
-_bmqver="5.3-r2"
+_bmqver="5.4-r0"
 
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
@@ -67,7 +67,7 @@ export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EP
 _linuxver="$(echo "${pkgver}" | cut -d . -f 1-2)"
 _bmqpatch="bmq_v${_bmqver}.patch"
 source+=("https://gitlab.com/alfredchen/bmq/raw/master/${_linuxver}/${_bmqpatch}")
-sha256sums+=("131ce6048e26771f5b017ceb4cc7106cd646c28ae8ce6d46c0fca92bed5f82ae")
+sha256sums+=("d3405db8ab0557a8d4ca28c15052413abefe0ae267016c3708dfaed2dae8a858")
 pkgver+=.bmq${_bmqver//-}
 
 prepare() {
